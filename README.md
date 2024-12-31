@@ -2,6 +2,10 @@
 A Rest API to manage personal finances.
 
 ### Project Setup
-- After cloning the project, access the folder on your terminal and run: `docker-compose build`.
-- Then start the container by simply running: `docker-compose up`.
+- After cloning the project, access the folder on your terminal and run: `docker-compose build`;
+- Then start the container by simply running: `docker-compose up`;
 - To access the API endpoints, insert the following URL in your browser: `http://localhost:5065/`.
+
+### Running Tests
+- Enter the container bash: `docker exec -it jmoney_api bash`;
+- Run `pytest` command.
