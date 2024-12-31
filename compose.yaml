@@ -1,0 +1,32 @@
+services:
+  jmoney_db:
+    image: mysql/mysql-server:latest
+    container_name: jmoney_db
+    environment:
+      MYSQL_ROOT_PASSWORD: password123
+      MYSQL_DATABASE: jmoney
+      MYSQL_ROOT_HOST: '%'
+    expose:
+      - '3306'
+    ports:
+      - "3306:3306"
+
+  jmoney_api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    environment:
+        MYSQL_ROOT_PASSWORD: password123
+    container_name: jmoney_api
+    volumes:
+      - .:/app
+      - ./settings/settings.py:/app/settings/settings.py
+    restart: always
+    ports:
+      - "5065:5065"
+    depends_on:
+      - jmoney_db 
+
+volumes:
+  mysql-volume:
+    driver: local
