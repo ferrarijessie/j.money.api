@@ -8,6 +8,11 @@ from flask_migrate import Migrate
 from database import db
 
 
+def register_routes(api):
+    from api import register_routes
+    register_routes(api)
+
+
 def create_app(test_config=None):
     app = Flask(__name__, instance_relative_config=True)
     cors = CORS(app)
@@ -42,4 +47,4 @@ app = create_app()
 api = init_api(app)
 
 migrate = Migrate(app, db)
-
+register_routes(api)
