@@ -9,6 +9,10 @@ from api.expenses.model import (
     ExpenseType,
     ExpenseCategoryEnum
 )
+from api.incomes.model import (
+    Income,
+    IncomeType
+)
 
 
 # EXPENSES FACTORIES
@@ -54,3 +58,45 @@ class ExpenseFactory(object):
 @pytest.fixture(scope="function")
 def expense_factory(request):
     return ExpenseFactory()
+
+
+#  INCOMES FIXTURES
+
+class IncomeTypeFactory(object):
+    def create(self, **kwargs):
+        data = {
+            'id': IncomeType.query.count() + 1,
+            'name': 'Income 1',
+            'base_value': 1000,
+        }
+        data.update(kwargs)
+        income_type = IncomeType(**data)
+        db.session.add(income_type)
+        db.session.commit()
+        return income_type
+
+@pytest.fixture(scope="function")
+def income_type_factory(request):
+    return IncomeTypeFactory()
+
+
+class IncomeFactory(object):
+    def create(self, **kwargs):
+        income_type = IncomeTypeFactory().create()
+        data = {
+            'id': Income.query.count() + 1,
+            'value': 100,
+            'month': 9,
+            'year': 2024,
+            'type_id': income_type.id,
+            'received': False
+        }
+        data.update(kwargs)
+        income = Income(**data)
+        db.session.add(income)
+        db.session.commit()
+        return income
+
+@pytest.fixture(scope="function")
+def income_factory(request):
+    return IncomeFactory()
