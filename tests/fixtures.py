@@ -13,6 +13,10 @@ from api.incomes.model import (
     Income,
     IncomeType
 )
+from api.savings.model import (
+    SavingType,
+    SavingValue
+)
 
 
 # EXPENSES FACTORIES
@@ -100,3 +104,48 @@ class IncomeFactory(object):
 @pytest.fixture(scope="function")
 def income_factory(request):
     return IncomeFactory()
+
+
+#  SAVINGS FIXTURES
+
+class SavingTypeFactory(object):
+    def create(self, **kwargs):
+        data = {
+            'id': SavingType.query.count() + 1,
+            'name': 'Saving Type 1',
+            'active': True
+        }
+        data.update(kwargs)
+        saving_type = SavingType(**data)
+        db.session.add(saving_type)
+        db.session.commit()
+        return saving_type
+
+@pytest.fixture(scope="function")
+def saving_type_factory(request):
+    return SavingTypeFactory()
+
+
+class SavingValueFactory(object):
+    def create(self, **kwargs):
+        saving_type = None
+        if not kwargs.get('type_id', None):
+            saving_type = SavingTypeFactory().create()
+
+        data = {
+            'id': SavingValue.query.count() + 1,
+            'value': 100,
+            'month': 9,
+            'year': 2024,
+            'type_id': saving_type.id if saving_type else kwargs['type_id'],
+            'used': False
+        }
+        data.update(kwargs)
+        saving_value = SavingValue(**data)
+        db.session.add(saving_value)
+        db.session.commit()
+        return saving_value
+
+@pytest.fixture(scope="function")
+def saving_value_factory(request):
+    return SavingValueFactory()
