@@ -6,6 +6,9 @@ from flask_restx import Api
 from flask_migrate import Migrate
 
 from database import db
+from api.expenses.model import *
+from api.incomes.model import *
+from api.savings.model import *
 
 
 def register_routes(api):
