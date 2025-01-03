@@ -1,14 +1,6 @@
 from marshmallow import Schema, fields
 
 
-class ExpenseTypeReturnSchema(Schema):
-    expenseTypeId = fields.Integer(attribute="id")
-    name = fields.String(attribute="name")
-    category = fields.String(attribute="get_category")
-    recurrent = fields.Boolean(attribute="recurrent")
-    baseValue = fields.Float(attribute="base_value")
-
-
 class ExpenseTypeAcceptSchema(Schema):
     name = fields.String(attribute="name")
     category = fields.String(attribute="category")
@@ -23,6 +15,8 @@ class ExpenseReturnSchema(Schema):
     month = fields.Integer(attribute="month")
     year = fields.Integer(attribute="year")
     paid = fields.Boolean(attribute="paid")
+    expenseTypeName = fields.String(attribute="expense_type_name")
+    category = fields.String(attribute="category")
 
 
 class ExpenseListReturnSchema(Schema):
@@ -33,6 +27,15 @@ class ExpenseListReturnSchema(Schema):
     year = fields.Integer(attribute="year")
     paid = fields.Boolean(attribute="paid")
     category = fields.String(attribute="category")
+
+
+class ExpenseTypeReturnSchema(Schema):
+    expenseTypeId = fields.Integer(attribute="id")
+    name = fields.String(attribute="name")
+    category = fields.String(attribute="get_category")
+    recurrent = fields.Boolean(attribute="recurrent")
+    baseValue = fields.Float(attribute="base_value")
+    expenseValues = fields.List(fields.Nested(ExpenseReturnSchema), required=False, attribute="expense_values")
 
 
 class ExpenseCreateSchema(Schema):

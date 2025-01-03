@@ -32,3 +32,11 @@ class Expense(db.Model):
     year = db.Column(db.Integer, nullable=False, default=datetime.today().year)
     type_id = db.Column(db.Integer, db.ForeignKey('expense_type.id'), nullable=False)
     paid = db.Column(db.Boolean, default=False)
+
+    @property
+    def expense_type_name(self):
+        return self.expense_type.name
+
+    @property
+    def category(self):
+        return self.expense_type.get_category
