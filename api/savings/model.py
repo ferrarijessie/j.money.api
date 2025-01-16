@@ -9,7 +9,7 @@ class SavingType(db.Model):
     active = db.Column(db.Boolean, default=False)
     base_value = db.Column(db.Numeric(precision=10, scale=2))
 
-    expense_values = db.relationship('SavingValue', backref='saving_type', lazy=True)
+    expense_values = db.relationship('SavingValue', backref='saving_type', cascade="all,delete", lazy=True)
 
 
 class SavingValue(db.Model):

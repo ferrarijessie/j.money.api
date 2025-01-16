@@ -7,7 +7,7 @@ class IncomeType(db.Model):
     recurrent = db.Column(db.Boolean, default=False)
     base_value = db.Column(db.Numeric(precision=10, scale=2))
     
-    income_values = db.relationship('Income', backref='income_type', lazy=True)
+    income_values = db.relationship('Income', backref='income_type', cascade="all,delete", lazy=True)
 
 class Income(db.Model):
     id = db.Column(db.Integer, primary_key=True)

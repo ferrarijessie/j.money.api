@@ -18,7 +18,7 @@ class ExpenseType(db.Model):
     recurrent = db.Column(db.Boolean, default=False)
     base_value = db.Column(db.Numeric(precision=10, scale=2))
     
-    expense_values = db.relationship('Expense', backref='expense_type', lazy=True)
+    expense_values = db.relationship('Expense', backref='expense_type', cascade="all,delete", lazy=True)
 
     @property
     def get_category(self):
