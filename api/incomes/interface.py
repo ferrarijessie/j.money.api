@@ -4,6 +4,7 @@ from mypy_extensions import TypedDict
 class IncomeTypeInterface:
     name: str
     recurrent: bool
+    base_value: float
 
 class IncomeInterface(TypedDict):
     type_id: int

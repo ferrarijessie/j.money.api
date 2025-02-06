@@ -4,10 +4,12 @@ class IncomeTypeReturnSchema(Schema):
     incomeTypeId = fields.Integer(attribute="id")
     name = fields.String(attribute="name")
     recurrent = fields.Boolean(attribute="recurrent")
+    baseValue = fields.Float(attribute="base_value")
 
 class IncomeTypeSchema(Schema):
     name = fields.String(attribute="name")
     recurrent = fields.Boolean(attribute="recurrent")
+    baseValue = fields.Float(attribute="base_value")
 
 class IncomeReturnSchema(Schema):
     incomeId = fields.Integer(attribute="id")
