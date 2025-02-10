@@ -73,7 +73,7 @@ class IncomeService:
             if income:
                 data = IncomeInterface({
                     "id": income.id,
-                    "type": income_type.name,
+                    "income_type_name": income_type.name,
                     "value": income.value,
                     "month": month,
                     "year": year,
