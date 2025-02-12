@@ -1,3 +1,7 @@
+import datetime
+
+from database import db
+
 from .model import *
 from .exceptions import (
     ExpenseNotFoundException, 
@@ -9,7 +13,6 @@ from .interface import (
     ExpenseReturnInterface,
     ExpenseTypeInterface
 )
-from database import db
 
 class ExpenseTypeService:
     @staticmethod
@@ -38,9 +41,22 @@ class ExpenseTypeService:
     @staticmethod
     def update(id: int, data: ExpenseTypeInterface):
         obj = ExpenseTypeService.get_one(id)
+        current_base_value = obj.base_value
 
         for key, value in data.items():
             setattr(obj, key, value)
+
+        if current_base_value != data.get('base_value', 0):
+            today = datetime.today()
+            expenses = Expense.query.filter(
+                Expense.type_id == id,
+                Expense.year >= today.year,
+                Expense.paid != True
+               
+            ).all()
+            for expense in expenses:
+                if (expense.year == today.year and expense.month >= today.month) or expense.month > today.month:
+                    ExpenseService.update(expense.id, {'value': data['base_value']})
 
         db.session.add(obj)
         db.session.commit()

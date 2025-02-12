@@ -1,3 +1,5 @@
+import datetime
+
 from database import db
 
 from .model import *
@@ -35,9 +37,23 @@ class IncomeTypeService:
     @staticmethod
     def update(id: int, data: IncomeTypeInterface):
         obj = IncomeTypeService.get_one(id)
+        current_base_value = obj.base_value
 
         for key, value in data.items():
             setattr(obj, key, value)
+
+        if current_base_value != data.get('base_value', 0):
+            today = datetime.today()
+            incomes = Income.query.filter(
+                Income.type_id == id,
+                Income.year >= today.year,
+                Income.received != True
+               
+            ).all()
+            for income in incomes:
+                if (income.year == today.year and income.month >= today.month) or income.month > today.month:
+                    IncomeService.update(income.id, {'value': data['base_value']})
+
 
         db.session.add(obj)
         db.session.commit()
