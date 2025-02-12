@@ -1,17 +1,10 @@
 from marshmallow import Schema, fields
 
 
-class SavingTypeReturnSchema(Schema):
-    id = fields.Integer(attribute="id")
-    name = fields.String(attribute="name")
-    active = fields.Boolean(attribute="active")
-    baseValue = fields.Float(attribute="base_value")
-
-
 class SavingTypeSchema(Schema):
     name = fields.String(attribute="name")
     active = fields.Boolean(attribute="active")
-    baseValue = fields.Float(attribute="base_value")
+    baseValue = fields.Float(attribute="base_value")    
 
 
 class SavingValueReturnSchema(Schema):
@@ -24,6 +17,14 @@ class SavingValueReturnSchema(Schema):
     used = fields.Boolean(attribute="used")
 
 
+class SavingTypeReturnSchema(Schema):
+    id = fields.Integer(attribute="id")
+    name = fields.String(attribute="name")
+    active = fields.Boolean(attribute="active")
+    baseValue = fields.Float(attribute="base_value")
+    savingValues = fields.List(fields.Nested(SavingValueReturnSchema), required=False, attribute="saving_values")
+
+
 class SavingValueCreateSchema(Schema):
     typeId = fields.Integer(attribute="type_id")
     value = fields.Float(attribute="value")
@@ -33,8 +34,11 @@ class SavingValueCreateSchema(Schema):
 
 
 class SavingValueUpdateSchema(Schema):
+    typeId = fields.Integer(attribute="type_id")
     value = fields.Float(attribute="value")
     used = fields.Boolean(attribute="used")
+    month = fields.Integer(attribute="month")
+    year = fields.Integer(attribute="year")
 
 
 class SavingsSummarySchema(Schema):
