@@ -4,7 +4,7 @@ from flask_accepts import responds
 
 from app import api
 
-from .schema import SummaryReturnSchema
+from .schema import SummaryReturnSchema, SummaryListReturnSchema
 from .service import SummaryService
 
 
@@ -17,3 +17,11 @@ class SummaryResource(Resource):
     @api.response(200, "Summary successfully retrieved.")
     def get(self, year, month):
         return SummaryService.get_summary(year=year, month=month)
+        
+
+@api.route('/list/<int:year>/<int:month>')
+class SummaryListResource(Resource):
+    @responds(schema=SummaryListReturnSchema(many=True), api=api)
+    @api.response(200, "Summary list successfully retrieved.")
+    def get(self, year, month):
+        return SummaryService.get_summary_list(year=year, month=month)

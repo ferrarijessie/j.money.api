@@ -1,7 +1,7 @@
 from mypy_extensions import TypedDict
 
 
-class IncomeTypeInterface:
+class IncomeTypeInterface(TypedDict):
     name: str
     recurrent: bool
     base_value: float

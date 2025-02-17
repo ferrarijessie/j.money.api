@@ -15,7 +15,7 @@ class ExpenseReturnSchema(Schema):
     month = fields.Integer(attribute="month")
     year = fields.Integer(attribute="year")
     paid = fields.Boolean(attribute="paid")
-    expenseTypeName = fields.String(attribute="expense_type_name")
+    typeName = fields.String(attribute="expense_type_name")
     category = fields.String(attribute="category")
 
 
@@ -38,14 +38,10 @@ class ExpenseTypeReturnSchema(Schema):
     expenseValues = fields.List(fields.Nested(ExpenseReturnSchema), required=False, attribute="expense_values")
 
 
-class ExpenseCreateSchema(Schema):
+class ExpenseInputSchema(Schema):
     typeId = fields.Integer(attribute="type_id")
     value = fields.Float(attribute="value")
     month = fields.Integer(attribute="month")
     year = fields.Integer(attribute="year")
-
-
-class ExpenseUpdateSchema(Schema):
-    value = fields.Float(attribute="value")
     paid = fields.Boolean(attribute="paid")
     

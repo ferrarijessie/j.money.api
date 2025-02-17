@@ -100,6 +100,13 @@ class SavingValueService:
         return savings_summary
 
     @staticmethod
+    def get_all_by_date(year: int, month: int):
+        return SavingValue.query.filter(
+            SavingValue.year == year,
+            SavingValue.month == month
+        ).all()
+
+    @staticmethod
     def get_unused_by_date(year: int, month: int):
         return SavingValue.query.filter(
             SavingValue.used == False,

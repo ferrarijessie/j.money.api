@@ -16,10 +16,9 @@ from .service import (
 from .schema import (
     ExpenseTypeReturnSchema, 
     ExpenseTypeAcceptSchema,
-    ExpenseCreateSchema,
+    ExpenseInputSchema,
     ExpenseReturnSchema,
     ExpenseListReturnSchema,
-    ExpenseUpdateSchema,
 )
 
 api = Namespace("Expenses", description="Access to your Expenses")
@@ -34,7 +33,7 @@ class ExpenseResource(Resource):
     def get(self):
         return ExpenseService.get_all()
 
-    @accepts(schema=ExpenseCreateSchema, api=api)
+    @accepts(schema=ExpenseInputSchema, api=api)
     @responds(schema=ExpenseReturnSchema, api=api)
     @api.response(200, "Expense successfully added.")
     def post(self):
@@ -52,7 +51,7 @@ class ExpenseIdResource(Resource):
         except ExpenseNotFoundException:
             return make_json_response(data={"code": 404, "message": "Expense not found"}, code=404)
 
-    @accepts(schema=ExpenseUpdateSchema, api=api)
+    @accepts(schema=ExpenseInputSchema, api=api)
     @responds(schema=ExpenseReturnSchema, api=api)
     @api.response(201, "Expense successfully edited.")
     def put(self, expenseId: int):

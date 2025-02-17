@@ -11,11 +11,10 @@ from .exceptions import (
 )
 from .service import IncomeService, IncomeTypeService
 from .schema import (
-    IncomeCreateSchema,
+    IncomeInputSchema,
     IncomeReturnSchema,
     IncomeTypeSchema,
     IncomeTypeReturnSchema,
-    IncomeUpdateSchema
 )
 
 api = Namespace("Incomes", description="Access to your Incomes")
@@ -71,7 +70,7 @@ class IncomeResource(Resource):
     def get(self):
         return IncomeService.get_all()
 
-    @accepts(schema=IncomeCreateSchema, api=api)
+    @accepts(schema=IncomeInputSchema, api=api)
     @responds(schema=IncomeReturnSchema, api=api)
     @api.response(201, "Income successfully added.")
     def post(self):
@@ -89,7 +88,7 @@ class IncomeIdResource(Resource):
         except IncomeNotFoundException:
             return make_json_response(data={"code": 404, "message": "Income not found"}, code=404)
 
-    @accepts(schema=IncomeUpdateSchema, api=api)
+    @accepts(schema=IncomeInputSchema, api=api)
     @responds(schema=IncomeReturnSchema, api=api)
     @api.response(201, "Income successfully edited.")
     def put(self, incomeId: int):

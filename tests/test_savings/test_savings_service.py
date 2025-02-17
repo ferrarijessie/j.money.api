@@ -237,3 +237,13 @@ class TestSavingValueService:
 
         assert len(result) == 1
         assert saving_value in result
+
+    def test_get_all_by_date(self, client, saving_value_factory):
+        saving_value_1 = saving_value_factory.create(year=2024, month=9, used=False)
+        saving_value_2 = saving_value_factory.create(year=2024, month=9, used=True)
+
+        result = SavingValueService.get_all_by_date(year=2024, month=9)
+
+        assert len(result) == 2
+        assert saving_value_1 in result
+        assert saving_value_2 in result

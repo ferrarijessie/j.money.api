@@ -136,7 +136,8 @@ class ExpenseService:
             if expense:
                 data = ExpenseReturnInterface({
                     "id": expense.id,
-                    "type": expense_type.name,
+                    "typeName": expense_type.name,
+                    "typeId": expense_type.id,
                     "value": expense.value,
                     "month": month,
                     "year": year,
