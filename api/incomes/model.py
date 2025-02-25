@@ -6,8 +6,10 @@ class IncomeType(db.Model):
     name = db.Column(db.String(80), nullable=False)
     recurrent = db.Column(db.Boolean, default=False)
     base_value = db.Column(db.Numeric(precision=10, scale=2))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
     income_values = db.relationship('Income', backref='income_type', cascade="all,delete", lazy=True)
+    user = db.relationship('User', backref='income_type')
 
 class Income(db.Model):
     id = db.Column(db.Integer, primary_key=True)
@@ -18,5 +20,13 @@ class Income(db.Model):
     received = db.Column(db.Boolean, default=False)
 
     @property
-    def income_type_name(self):
+    def type_name(self):
         return self.income_type.name
+
+    @property
+    def user_id(self):
+        return self.income_type.user_id
+
+    @property
+    def user(self):
+        return self.income_type.user

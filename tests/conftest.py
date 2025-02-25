@@ -4,6 +4,7 @@ from sqlalchemy_utils import create_database, database_exists
 
 from app import create_app, init_api, register_routes
 from database import db as _db
+from auth import login_manager
 from .fixtures import *
 
 TEST_DATABASE_URI = "mysql://root:password123@jmoney_db:3306/test_jmoney"
@@ -23,6 +24,7 @@ def app():
     register_routes(api)
     
     with app.app_context():
+        login_manager.init_app(app)
         _db.create_all()
         yield app
 

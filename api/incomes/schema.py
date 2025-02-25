@@ -7,9 +7,9 @@ class IncomeTypeSchema(Schema):
     baseValue = fields.Float(attribute="base_value")
 
 class IncomeReturnSchema(Schema):
-    incomeId = fields.Integer(attribute="id")
+    id = fields.Integer(attribute="id")
     typeId = fields.Integer(attribute="type_id")
-    typeName = fields.String(attribute="income_type_name")
+    typeName = fields.String(attribute="type_name")
     value = fields.Float(attribute="value")
     month = fields.Integer(attribute="month")
     year = fields.Integer(attribute="year")

@@ -5,6 +5,7 @@ class SavingTypeInterface(TypedDict):
     name: str
     active: bool
     base_value: float
+    user_id: int
 
 
 class SavingValueInterface(TypedDict):

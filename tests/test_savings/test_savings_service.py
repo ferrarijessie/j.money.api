@@ -15,100 +15,124 @@ from api.savings.exceptions import (
 
 
 class TestSavingTypeService:
-    def test_get_all_empty_result(self, client):
-        result = SavingTypeService.get_all()
+    def test_get_all_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
+        result = SavingTypeService.get_all(user_id=user.id)
 
         assert result == []
 
     def test_get_all_with_result(self, client, saving_type_factory):
         saving_type = saving_type_factory.create()
 
-        result = SavingTypeService.get_all()
+        result = SavingTypeService.get_all(user_id=saving_type.user_id)
 
         assert saving_type in result
 
     def test_get_active_empty_result(self, client, saving_type_factory):
-        saving_type_factory.create(active=False)
+        saving_type = saving_type_factory.create(active=False)
 
-        result = SavingTypeService.get_active()
+        result = SavingTypeService.get_active(user_id=saving_type.user_id)
 
         assert len(result) == 0
 
-    def test_get_active_with_result(self, client, saving_type_factory):
-        active_saving_type = saving_type_factory.create()
-        inactive_saving_type = saving_type_factory.create(active=False)
+    def test_get_active_with_result(self, client, saving_type_factory, user_factory):
+        user = user_factory.create()
+        active_saving_type = saving_type_factory.create(user_id=user.id)
+        inactive_saving_type = saving_type_factory.create(active=False, user_id=user.id)
 
-        result = SavingTypeService.get_active()
+        result = SavingTypeService.get_active(user_id=user.id)
 
         assert active_saving_type in result
         assert inactive_saving_type not in result
     
-    def test_get_one_non_existent(self, client):
+    def test_get_one_non_existent(self, client, saving_type_factory):
+        saving_type = saving_type_factory.create()
+
         with pytest.raises(SavingTypeNotFoundException):
-            SavingTypeService.get_one(1)
+            SavingTypeService.get_one(saving_type.id, user_id=saving_type.user_id+1)
 
     def test_get_one_with_result(self, client, saving_type_factory):
         saving_type = saving_type_factory.create()
 
-        result = SavingTypeService.get_one(saving_type.id)
+        result = SavingTypeService.get_one(saving_type.id, user_id=saving_type.user_id)
 
         assert saving_type == result
 
-    def test_create(self, client):
+    def test_create(self, client, user_factory):
+        user = user_factory.create()
+
         result = SavingTypeService.create({
-            'name': 'New Saving Type'
+            'name': 'New Saving Type',
+            'user_id': user.id
         })
 
         assert isinstance(result, SavingType)
     
-    def test_update_non_existent(self, client):
+    def test_update_non_existent(self, client, saving_type_factory):
+        saving_type = saving_type_factory.create()
+
         with pytest.raises(SavingTypeNotFoundException):
-            SavingTypeService.update(1, {'name': 'Edited Saving Type'})
+            SavingTypeService.update(
+                saving_type.id, 
+                {'name': 'Edited Saving Type'}, 
+                user_id=saving_type.user_id+1
+            )
 
     def test_update_success(self, client, saving_type_factory):
         saving_type = saving_type_factory.create()
 
-        result = SavingTypeService.update(saving_type.id, {'name': 'Edited Saving Type'})
+        result = SavingTypeService.update(
+            saving_type.id, 
+            {'name': 'Edited Saving Type'}, 
+            user_id=saving_type.user_id
+        )
 
         assert result.name == 'Edited Saving Type'
     
-    def test_delete_non_existent(self, client):
+    def test_delete_non_existent(self, client, saving_type_factory):
+        saving_type = saving_type_factory.create()
+
         with pytest.raises(SavingTypeNotFoundException):
-            SavingTypeService.delete(1)
+            SavingTypeService.delete(saving_type.id, user_id=saving_type.user_id+1)
 
     def test_delete_success(self, client, saving_type_factory):
         saving_type = saving_type_factory.create()
         
-        result = SavingTypeService.get_one(saving_type.id)
+        result = SavingTypeService.get_one(saving_type.id, user_id=saving_type.user_id)
         assert result == saving_type
 
-        SavingTypeService.delete(saving_type.id)
+        SavingTypeService.delete(saving_type.id, user_id=saving_type.user_id)
 
         with pytest.raises(SavingTypeNotFoundException):
-            SavingTypeService.get_one(saving_type.id)
+            SavingTypeService.get_one(saving_type.id, user_id=saving_type.user_id)
 
 
 class TestSavingValueService:
-    def test_get_all_empty_result(self, client):
-        result = SavingValueService.get_all()
+    def test_get_all_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
+        result = SavingValueService.get_all(user_id=user.id)
 
         assert result == []
 
     def test_get_all_with_result(self, client, saving_value_factory):
         saving_value = saving_value_factory.create()
 
-        result = SavingValueService.get_all()
+        result = SavingValueService.get_all(user_id=saving_value.user_id)
 
         assert saving_value in result
     
-    def test_get_one_non_existent(self, client):
+    def test_get_one_non_existent(self, client, saving_value_factory):
+        saving_value = saving_value_factory.create()
+
         with pytest.raises(SavingValueNotFoundException):
-            SavingValueService.get_one(1)
+            SavingValueService.get_one(saving_value.id, user_id=saving_value.user_id+1)
 
     def test_get_one_with_result(self, client, saving_value_factory):
         saving_value = saving_value_factory.create()
 
-        result = SavingValueService.get_one(saving_value.id)
+        result = SavingValueService.get_one(saving_value.id, user_id=saving_value.user_id)
 
         assert saving_value == result
 
@@ -126,14 +150,16 @@ class TestSavingValueService:
 
         assert isinstance(result, SavingValue)
     
-    def test_update_non_existent(self, client):
+    def test_update_non_existent(self, client, saving_value_factory):
+        saving_value = saving_value_factory.create()
+
         data = {
             'value': 500,
             'used': True
         }
 
         with pytest.raises(SavingValueNotFoundException):
-            SavingValueService.update(1, data)
+            SavingValueService.update(saving_value.id, data, user_id=saving_value.user_id+1)
 
     def test_update_success(self, client, saving_value_factory):
         saving_value = saving_value_factory.create()
@@ -142,25 +168,27 @@ class TestSavingValueService:
             'used': True
         }
 
-        result = SavingValueService.update(saving_value.id, data)
+        result = SavingValueService.update(saving_value.id, data, user_id=saving_value.user_id)
 
         assert result.value == 500
         assert result.used == True
     
-    def test_delete_non_existent(self, client):
+    def test_delete_non_existent(self, client, saving_value_factory):
+        saving_value = saving_value_factory.create()
+
         with pytest.raises(SavingValueNotFoundException):
-            SavingValueService.delete(1)
+            SavingValueService.delete(saving_value.id, user_id=saving_value.user_id+1)
 
     def test_delete_success(self, client, saving_value_factory):
         saving_value = saving_value_factory.create()
         
-        result = SavingValueService.get_one(saving_value.id)
+        result = SavingValueService.get_one(saving_value.id, user_id=saving_value.user_id)
         assert result == saving_value
 
-        SavingValueService.delete(saving_value.id)
+        SavingValueService.delete(saving_value.id, user_id=saving_value.user_id)
 
         with pytest.raises(SavingValueNotFoundException):
-            SavingValueService.get_one(saving_value.id)
+            SavingValueService.get_one(saving_value.id, user_id=saving_value.user_id)
 
     def test__get_unused_by_type_and_date(self, client, saving_type_factory, saving_value_factory):
         saving_type = saving_type_factory.create()
@@ -218,12 +246,13 @@ class TestSavingValueService:
 
         assert result == 200
 
-    def test_get_savings_summary_list(self, client, saving_type_factory, saving_value_factory):
-        saving_type = saving_type_factory.create()
+    def test_get_savings_summary_list(self, client, saving_type_factory, saving_value_factory, user_factory):
+        user = user_factory.create()
+        saving_type = saving_type_factory.create(user_id=user.id)
         saving_value_factory.create(value=100, used=True, type_id=saving_type.id, year=2024, month=9)    
         saving_value_factory.create(value=200, used=False, type_id=saving_type.id, year=2024, month=9)
 
-        result = SavingValueService.get_savings_summary_list(year=2024, month=10)
+        result = SavingValueService.get_savings_summary_list(year=2024, month=10, user_id=user.id)
 
         assert len(result) == 1
         assert result[0]['saving_type_id'] == saving_type.id
@@ -233,16 +262,19 @@ class TestSavingValueService:
     def test_get_unused_by_date(self, client, saving_value_factory):
         saving_value = saving_value_factory.create(year=2024, month=9, used=False)
 
-        result = SavingValueService.get_unused_by_date(year=2024, month=9)
+        result = SavingValueService.get_unused_by_date(year=2024, month=9, user_id=saving_value.id)
 
         assert len(result) == 1
         assert saving_value in result
 
-    def test_get_all_by_date(self, client, saving_value_factory):
-        saving_value_1 = saving_value_factory.create(year=2024, month=9, used=False)
-        saving_value_2 = saving_value_factory.create(year=2024, month=9, used=True)
+    def test_get_all_by_date(self, client, saving_value_factory, saving_type_factory, user_factory):
+        user = user_factory.create()
+        saving_type_1 = saving_type_factory.create(user_id=user.id)
+        saving_type_2 = saving_type_factory.create(user_id=user.id)
+        saving_value_1 = saving_value_factory.create(year=2024, month=9, used=False, type_id=saving_type_1.id)
+        saving_value_2 = saving_value_factory.create(year=2024, month=9, used=True, type_id=saving_type_2.id)
 
-        result = SavingValueService.get_all_by_date(year=2024, month=9)
+        result = SavingValueService.get_all_by_date(year=2024, month=9, user_id=user.id)
 
         assert len(result) == 2
         assert saving_value_1 in result

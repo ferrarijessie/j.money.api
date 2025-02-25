@@ -19,43 +19,52 @@ from api.expenses.exceptions import (
 
 class TestExpenseTypeService:
     def test_get_all_empty_result(self, client):
-        result = ExpenseTypeService.get_all()
+        result = ExpenseTypeService.get_all(user_id=1)
         
         assert result == []
 
+    def test_get_all_category_wrong_user_id(self, client, expense_type_factory):
+        expense_type = expense_type_factory.create()
+        result = ExpenseTypeService.get_all(user_id=expense_type.user_id+1)
+
+        assert expense_type not in result
+
     def test_get_all_category_with_result(self, client, expense_type_factory):
         expense_type = expense_type_factory.create()
-        result = ExpenseTypeService.get_all()
+        result = ExpenseTypeService.get_all(user_id=expense_type.user_id)
 
         assert expense_type in result
 
     def test_get_one_no_results(self, client):
         id = ExpenseType.query.count() + 1
         with pytest.raises(ExpenseTypeNotFoundException):
-            ExpenseTypeService.get_one(id)
+            ExpenseTypeService.get_one(id, user_id=2)
 
     def test_get_one_with_result(self, client, expense_type_factory):
         expense_type = expense_type_factory.create()
-        result = ExpenseTypeService.get_one(expense_type.id)
+        result = ExpenseTypeService.get_one(expense_type.id, user_id=expense_type.user_id)
 
         assert result == expense_type
 
     def test_get_by_category_empty_result(self, client):
-        result = ExpenseTypeService.get_by_category(ExpenseCategoryEnum.CARD)
+        result = ExpenseTypeService.get_by_category(ExpenseCategoryEnum.CARD, user_id=1)
         
         assert result == []
 
     def test_get_by_category_with_result(self, client, expense_type_factory):
         expense_type = expense_type_factory.create()
-        result = ExpenseTypeService.get_by_category(expense_type.category)
+        result = ExpenseTypeService.get_by_category(expense_type.category, user_id=expense_type.user_id)
        
         assert expense_type in result
 
-    def test_create(self, client):
+    def test_create(self, client, user_factory):
+        user = user_factory.create()
+
         result = ExpenseTypeService.create({
             'name': 'Type 1',
             'category': ExpenseCategoryEnum.PERSONAL,
-            'recurrent': False
+            'recurrent': False,
+            'user_id': user.id
         })
 
         assert isinstance(result, ExpenseType)
@@ -67,64 +76,107 @@ class TestExpenseTypeService:
         expense_type = expense_type_factory.create()
         
         with pytest.raises(ExpenseTypeNotFoundException):
-            ExpenseTypeService.update(expense_type.id+1, {'category': ExpenseCategoryEnum.HOUSE})
+            ExpenseTypeService.update(
+                expense_type.id+1, 
+                {'category': ExpenseCategoryEnum.HOUSE}, 
+                user_id=expense_type.user_id+1
+            )
 
     def test_update(self, client, expense_type_factory):
         expense_type = expense_type_factory.create()
-        result = ExpenseTypeService.update(expense_type.id, {'category': ExpenseCategoryEnum.HOUSE})
+        result = ExpenseTypeService.update(
+            expense_type.id, 
+            {'category': ExpenseCategoryEnum.HOUSE},
+            user_id=expense_type.user_id
+        )
         
         assert result.category == ExpenseCategoryEnum.HOUSE
+        
+    def test_update_will_update_future_values(
+        self, 
+        client, 
+        expense_type_factory, 
+        expense_factory, 
+        user_factory
+    ):
+        user = user_factory.create()
+        expense_type = expense_type_factory.create(
+            recurrent=True,
+            name='Type 1',
+            base_value=100,
+            user_id=user.id
+        )
+        expense = expense_factory.create(
+            type_id=expense_type.id, 
+            value=expense_type.base_value,
+            month=datetime.today().month,
+            year=datetime.today().year,
+            paid=False
+        )
+
+        result = ExpenseTypeService.update(
+            expense.type_id, 
+            {'base_value': 200},
+            user_id=user.id
+        )
+
+        expense = ExpenseService.get_one(id=expense.id, user_id=user.id)
+        
+        assert result.base_value == 200
+        assert expense.value == 200
 
     def test_delete_non_existent(self, client, expense_type_factory):
         expense_type = expense_type_factory.create()
 
         with pytest.raises(ExpenseTypeNotFoundException):
-            ExpenseTypeService.delete(expense_type.id+1)
+            ExpenseTypeService.delete(expense_type.id, user_id=expense_type.user_id+1)
 
     def test_delete(self, client, expense_type_factory):
         expense_type = expense_type_factory.create()
         id = expense_type.id
 
-        result = ExpenseTypeService.get_one(id)
+        result = ExpenseTypeService.get_one(id, user_id=expense_type.user_id)
         assert result == expense_type
 
-        ExpenseTypeService.delete(id)
+        ExpenseTypeService.delete(id, user_id=expense_type.user_id)
         
         with pytest.raises(ExpenseTypeNotFoundException):
-            ExpenseTypeService.get_one(id)
+            ExpenseTypeService.get_one(id, user_id=expense_type.user_id)
 
 
 class TestExpenseService:
-    def test_get_all_empty_result(self, client):
-        result = ExpenseService.get_all()
+    def test_get_all_empty_result(self, client, expense_factory):
+        expense = expense_factory.create()
+        result = ExpenseService.get_all(user_id=expense.user_id+1)
 
         assert result == []
 
     def test_get_all_with_result(self, client, expense_factory):
         expense = expense_factory.create()
-        result = ExpenseService.get_all()
+        result = ExpenseService.get_all(user_id=expense.user_id)
 
         assert expense in result
 
-    def test_get_one_empty_result(self, client):
-        id = Expense.query.count() + 1
+    def test_get_one_empty_result(self, client, expense_factory):
+        expense = expense_factory.create()
         with pytest.raises(ExpenseNotFoundException) as e:
-            ExpenseService.get_one(id)
+            ExpenseService.get_one(expense.id, user_id=expense.user_id+1)
 
     def test_get_one_with_result(self, client, expense_factory):
         expense = expense_factory.create()
-        result = ExpenseService.get_one(expense.id)
+        result = ExpenseService.get_one(expense.id, user_id=expense.user_id)
         
         assert result == expense
 
-    def test_get_by_category_empty_result(self, client):
-        result = ExpenseService.get_by_category(ExpenseCategoryEnum.COMPANY)
+    def test_get_by_category_empty_result(self, client, expense_factory):
+        expense = expense_factory.create()
+        result = ExpenseService.get_by_category(ExpenseCategoryEnum.COMPANY, user_id=expense.user_id+1)
         
         assert result == []
 
     def test_get_by_category_with_result(self, client, expense_factory):
         expense = expense_factory.create()
-        result = ExpenseService.get_by_category(expense.expense_type.category)
+        result = ExpenseService.get_by_category(expense.expense_type.category, user_id=expense.user_id)
         
         assert expense in result
 
@@ -149,54 +201,60 @@ class TestExpenseService:
         expense = expense_factory.create()
 
         with pytest.raises(ExpenseNotFoundException):
-            ExpenseService.update(expense.id+1, {'value': 135, 'paid': True})
+            ExpenseService.update(expense.id, {'value': 135, 'paid': True}, user_id=expense.user_id+1)
         
     def test_update(self, client, expense_factory):
         expense = expense_factory.create()
-        result = ExpenseService.update(expense.id, {'value': 135, 'paid': True})
+        result = ExpenseService.update(expense.id, {'value': 135, 'paid': True}, user_id=expense.user_id)
         
         assert result.value == 135
         assert result.paid == True
 
     def test_delete_non_existent(self, client, expense_factory):
         expense = expense_factory.create()
-        id = expense.id + 1
         with pytest.raises(ExpenseNotFoundException) as e:
-            ExpenseService.delete(id)
+            ExpenseService.delete(expense.id, user_id=expense.user_id+1)
 
     def test_delete(self, client, expense_factory):
         expense = expense_factory.create()
         id = expense.id
 
-        result = ExpenseService.get_one(id)
+        result = ExpenseService.get_one(id, user_id=expense.user_id)
         assert result == expense
 
-        ExpenseService.delete(id)
+        ExpenseService.delete(id, user_id=expense.user_id)
 
         with pytest.raises(ExpenseNotFoundException) as e:
-            ExpenseService.get_one(id)
+            ExpenseService.get_one(id, user_id=expense.user_id)
 
     def test_get_expense_list(
         self, 
         client, 
         expense_type_factory, 
-        expense_factory
+        expense_factory,
+        user_factory
     ):
-        expense_type_1 = expense_type_factory.create(**{'recurrent': True, 'name': 'Type 1', 'base_value': 100})
+        user = user_factory.create()
+        expense_type_1 = expense_type_factory.create(
+            recurrent=True,
+            name='Type 1',
+            base_value=100,
+            user_id=user.id
+        )
 
-        expense_type_2 = expense_type_factory.create(**{'recurrent': True, 'name': 'Type 2'})
-        expense_2 = expense_factory.create(**{'type_id': expense_type_2.id, 'month': 9, 'year': 2024, 'paid': True})
+        expense_type_2 = expense_type_factory.create(recurrent=True, name='Type 2', user_id=user.id)
+        expense_2 = expense_factory.create(type_id=expense_type_2.id, month=9, year=2024, paid=True)
 
-        result = ExpenseService.get_expense_list(category=expense_type_1.category.value, month=9, year=2024)
+        result = ExpenseService.get_expense_list(category=expense_type_1.category.value, month=9, year=2024, user_id=user.id)
         assert len(result) == 2
 
-        result_1 = [r for r in result if r['type'] == expense_type_1.name][0]
+        result_1 = [r for r in result if r['type_name'] == expense_type_1.name][0]
         assert result_1['value'] == expense_type_1.base_value
         assert result_1['month'] == 9
         assert result_1['year'] == 2024
         assert result_1['paid'] == False
 
-        result_2 = [r for r in result if r['type'] == expense_type_2.name][0]
+        result_2 = [r for r in result if r['type_name'] == expense_type_2.name][0]
         assert result_2['value'] == expense_2.value
         assert result_2['month'] == expense_2.month
         assert result_2['year'] == expense_2.year
@@ -206,23 +264,30 @@ class TestExpenseService:
         self, 
         client, 
         expense_type_factory, 
-        expense_factory
+        expense_factory,
+        user_factory
     ):
-        expense_type_1 = expense_type_factory.create(**{'recurrent': True, 'name': 'Type 1', 'category': ExpenseCategoryEnum.CARD, 'base_value': 100})
+        user = user_factory.create()
+        expense_type_1 = expense_type_factory.create(
+            recurrent=True,
+            name='Type 1',
+            base_value=100,
+            user_id=user.id
+        )
 
-        expense_type_2 = expense_type_factory.create(**{'recurrent': True, 'name': 'Type 2', 'category': ExpenseCategoryEnum.HOUSE})
-        expense_2 = expense_factory.create(**{'type_id': expense_type_2.id, 'month': 9, 'year': 2024, 'paid': True})
+        expense_type_2 = expense_type_factory.create(recurrent=True, name='Type 2', user_id=user.id)
+        expense_2 = expense_factory.create(type_id=expense_type_2.id, month=9, year=2024, paid=True)
 
-        result = ExpenseService.get_expense_list(month=9, year=2024)
+        result = ExpenseService.get_expense_list(month=9, year=2024, user_id=user.id)
         assert len(result) == 2
 
-        result_1 = [r for r in result if r['type'] == expense_type_1.name][0]
+        result_1 = [r for r in result if r['type_name'] == expense_type_1.name][0]
         assert result_1['value'] == expense_type_1.base_value
         assert result_1['month'] == 9
         assert result_1['year'] == 2024
         assert result_1['paid'] == False
 
-        result_2 = [r for r in result if r['type'] == expense_type_2.name][0]
+        result_2 = [r for r in result if r['type_name'] == expense_type_2.name][0]
         assert result_2['value'] == expense_2.value
         assert result_2['month'] == expense_2.month
         assert result_2['year'] == expense_2.year

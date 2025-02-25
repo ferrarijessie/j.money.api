@@ -11,9 +11,12 @@ from api.expenses.controller import (
 from api.expenses.model import ExpenseCategoryEnum
 
 class TestExpenseResource:
-    def test_get_empty_result(self, client):
+    def test_get_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.get(
-            url_for(ExpenseResource.endpoint)
+            url_for(ExpenseResource.endpoint),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 200
@@ -24,13 +27,14 @@ class TestExpenseResource:
         expense = expense_factory.create()
 
         response = client.get(
-            url_for(ExpenseResource.endpoint)
+            url_for(ExpenseResource.endpoint),
+            headers={'x-api-key': expense.user.token}
         )
         response_json = response.get_json()
 
         assert response.status_code == 200
         assert len(response_json) == 1
-        assert response_json[0]["expenseId"] == expense.id
+        assert response_json[0]["id"] == expense.id
 
     def test_post(self, client, expense_type_factory):
         expense_type = expense_type_factory.create()
@@ -43,12 +47,13 @@ class TestExpenseResource:
 
         response = client.post(
             url_for(ExpenseResource.endpoint), 
-            json=payload
+            json=payload,
+            headers={'x-api-key': expense_type.user.token}
         )
         response_json = response.get_json()
 
         assert response.status_code == 201
-        assert response_json["expenseId"] > 0
+        assert response_json["id"] > 0
         assert response_json["value"] == 100
         assert response_json["month"] == 1
         assert response_json["year"] == 2024
@@ -57,9 +62,12 @@ class TestExpenseResource:
 
 
 class TestExpenseIdResource:
-    def test_get_empty_result(self, client):
+    def test_get_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.get(
-            url_for(ExpenseIdResource.endpoint, expenseId=1)
+            url_for(ExpenseIdResource.endpoint, expenseId=1),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -69,19 +77,22 @@ class TestExpenseIdResource:
         expense = expense_factory.create()
 
         response = client.get(
-            url_for(ExpenseIdResource.endpoint, expenseId=expense.id)
+            url_for(ExpenseIdResource.endpoint, expenseId=expense.id),
+            headers={'x-api-key': expense.user.token}
         )
         response_json = response.get_json()
 
         assert response.status_code == 200
-        assert response_json["expenseId"] == expense.id
+        assert response_json["id"] == expense.id
         assert response_json["value"] == expense.value
         assert response_json["month"] == expense.month
         assert response_json["year"] == expense.year
         assert response_json["typeId"] == expense.type_id
         assert response_json["paid"] == expense.paid
 
-    def test_put_non_existent(self, client):
+    def test_put_non_existent(self, client, user_factory):
+        user = user_factory.create()
+
         payload = {
             "value": 123,
             "paid": True
@@ -89,7 +100,8 @@ class TestExpenseIdResource:
 
         response = client.put(
             url_for(ExpenseIdResource.endpoint, expenseId=1),
-            json=payload
+            json=payload,
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -104,7 +116,8 @@ class TestExpenseIdResource:
 
         response = client.put(
             url_for(ExpenseIdResource.endpoint, expenseId=expense.id),
-            json=payload
+            json=payload,
+            headers={'x-api-key': expense.user.token}
         )
         response_json = response.get_json()
 
@@ -112,9 +125,12 @@ class TestExpenseIdResource:
         assert response_json["value"] == 123
         assert response_json["paid"] == True
 
-    def test_delete_non_existent(self, client):
+    def test_delete_non_existent(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.delete(
-            url_for(ExpenseIdResource.endpoint, expenseId=1)
+            url_for(ExpenseIdResource.endpoint, expenseId=1),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -124,16 +140,20 @@ class TestExpenseIdResource:
         expense = expense_factory.create()
 
         response = client.delete(
-            url_for(ExpenseIdResource.endpoint, expenseId=expense.id)
+            url_for(ExpenseIdResource.endpoint, expenseId=expense.id),
+            headers={'x-api-key': expense.user.token}
         )
 
         assert response.status_code == 204
 
 
 class TestExpenseByCategoryResource:
-    def test_get_empty_result(self, client):
+    def test_get_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.get(
-            url_for(ExpenseByCategoryResource.endpoint, category="personal")
+            url_for(ExpenseByCategoryResource.endpoint, category="personal"),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 200
@@ -144,18 +164,22 @@ class TestExpenseByCategoryResource:
         expense = expense_factory.create()
 
         response = client.get(
-            url_for(ExpenseByCategoryResource.endpoint, category=expense.expense_type.category.value)
+            url_for(ExpenseByCategoryResource.endpoint, category=expense.expense_type.category.value),
+            headers={'x-api-key': expense.user.token}
         )
         response_json = response.get_json()[0]
 
         assert response.status_code == 200
-        assert response_json["expenseId"] == expense.id
+        assert response_json["id"] == expense.id
 
 
 class TestExpenseListResource:
-    def test_empty_result(self, client):
+    def test_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.get(
-            url_for(ExpenseListResource.endpoint, category="personal", month=9, year=2024)
+            url_for(ExpenseListResource.endpoint, category="personal", month=9, year=2024),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 200
@@ -165,15 +189,23 @@ class TestExpenseListResource:
         self,
         client, 
         expense_type_factory, 
-        expense_factory
+        expense_factory,
+        user_factory
     ):
-        expense_type_1 = expense_type_factory.create(**{'recurrent': True, 'name': 'Type 1', 'base_value': 100})
+        user = user_factory.create()
+        expense_type_1 = expense_type_factory.create(
+            recurrent=True,
+            name='Type 1',
+            base_value=100,
+            user_id=user.id
+        )
 
-        expense_type_2 = expense_type_factory.create(**{'recurrent': True, 'name': 'Type 2'})
-        expense_factory.create(**{'type_id': expense_type_2.id, 'month': 9, 'year': 2024, 'paid': True})
+        expense_type_2 = expense_type_factory.create(recurrent=True, name='Type 2', user_id=user.id)
+        expense_2 = expense_factory.create(type_id=expense_type_2.id, month=9, year=2024, paid=True)
 
         response = client.get(
-            url_for(ExpenseListResource.endpoint, category=expense_type_1.category.value, month=9, year=2024)
+            url_for(ExpenseListResource.endpoint, category=expense_type_1.category.value, month=9, year=2024),
+            headers={'x-api-key': user.token}
         )
         response_json = response.get_json()
 
@@ -182,9 +214,12 @@ class TestExpenseListResource:
 
 
 class TestExpenseTypeResource:
-    def test_get_empty_result(self, client):
+    def test_get_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.get(
-            url_for(ExpenseTypeResource.endpoint)
+            url_for(ExpenseTypeResource.endpoint),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 200
@@ -194,14 +229,17 @@ class TestExpenseTypeResource:
         expense_type = expense_type_factory.create()
 
         response = client.get(
-            url_for(ExpenseTypeResource.endpoint)
+            url_for(ExpenseTypeResource.endpoint),
+            headers={'x-api-key': expense_type.user.token}
         )
         response_json = response.get_json()
 
         assert response.status_code == 200
         assert response_json[0]["expenseTypeId"] == expense_type.id
 
-    def test_post_success(self, client):
+    def test_post_success(self, client, user_factory):
+        user = user_factory.create()
+
         payload = {
             'name': 'Luz',
             'category': ExpenseCategoryEnum.HOUSE.value,
@@ -210,7 +248,8 @@ class TestExpenseTypeResource:
 
         response = client.post(
             url_for(ExpenseTypeResource.endpoint),
-            json=payload
+            json=payload,
+            headers={'x-api-key': user.token}
         )
         response_json = response.get_json()
 
@@ -222,9 +261,12 @@ class TestExpenseTypeResource:
 
 
 class TestExpenseTypeIdResource:
-    def test_get_non_existent(self, client):
+    def test_get_non_existent(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.get(
-            url_for(ExpenseTypeIdResource.endpoint, typeId=1)
+            url_for(ExpenseTypeIdResource.endpoint, typeId=1),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -234,14 +276,17 @@ class TestExpenseTypeIdResource:
         expense_type = expense_type_factory.create()
 
         response = client.get(
-            url_for(ExpenseTypeIdResource.endpoint, typeId=expense_type.id)
+            url_for(ExpenseTypeIdResource.endpoint, typeId=expense_type.id),
+            headers={'x-api-key': expense_type.user.token}
         )
         response_json = response.get_json()
 
         assert response.status_code == 200
         assert response_json["expenseTypeId"] == expense_type.id
 
-    def test_put_non_existent(self, client):
+    def test_put_non_existent(self, client, user_factory):
+        user = user_factory.create()
+
         payload = {
             "name": "New Type",
             "category": ExpenseCategoryEnum.HEALTH.value,
@@ -250,7 +295,8 @@ class TestExpenseTypeIdResource:
 
         response = client.put(
             url_for(ExpenseTypeIdResource.endpoint, typeId=1),
-            json=payload
+            json=payload,
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -266,7 +312,8 @@ class TestExpenseTypeIdResource:
 
         response = client.put(
             url_for(ExpenseTypeIdResource.endpoint, typeId=expense_type.id),
-            json=payload
+            json=payload,
+            headers={'x-api-key': expense_type.user.token}
         )
         response_json = response.get_json()
 
@@ -276,9 +323,12 @@ class TestExpenseTypeIdResource:
         assert response_json["category"] == ExpenseCategoryEnum.HEALTH.value
         assert response_json["recurrent"] == True
 
-    def test_delete_non_existent(self, client):
+    def test_delete_non_existent(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.delete(
             url_for(ExpenseTypeIdResource.endpoint, typeId=1),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -289,6 +339,7 @@ class TestExpenseTypeIdResource:
 
         response = client.delete(
             url_for(ExpenseTypeIdResource.endpoint, typeId=expense_type.id),
+            headers={'x-api-key': expense_type.user.token}
         )
 
         assert response.status_code == 204

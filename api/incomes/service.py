@@ -16,12 +16,15 @@ from .exceptions import (
 
 class IncomeTypeService:
     @staticmethod
-    def get_all():
-        return IncomeType.query.all()
+    def get_all(user_id: int):
+        return IncomeType.query.filter(IncomeType.user_id == user_id).all()
 
     @staticmethod
-    def get_one(id: int):
-        income_type = db.session.get(IncomeType, id)
+    def get_one(id: int, user_id: int):
+        income_type = IncomeType.query.filter(
+            IncomeType.user_id == user_id,
+            IncomeType.id == id
+        ).first()
         if not income_type:
             raise IncomeTypeNotFoundException()
         return income_type
@@ -35,8 +38,8 @@ class IncomeTypeService:
         return obj
 
     @staticmethod
-    def update(id: int, data: IncomeTypeInterface):
-        obj = IncomeTypeService.get_one(id)
+    def update(id: int, data: IncomeTypeInterface, user_id: int):
+        obj = IncomeTypeService.get_one(id, user_id=user_id)
         current_base_value = obj.base_value
 
         for key, value in data.items():
@@ -52,7 +55,7 @@ class IncomeTypeService:
             ).all()
             for income in incomes:
                 if (income.year == today.year and income.month >= today.month) or income.month > today.month:
-                    IncomeService.update(income.id, {'value': data['base_value']})
+                    IncomeService.update(income.id, {'value': data['base_value']}, user_id=user_id)
 
 
         db.session.add(obj)
@@ -61,21 +64,21 @@ class IncomeTypeService:
         return obj
 
     @staticmethod
-    def delete(id: int):
-        obj = IncomeTypeService.get_one(id)
+    def delete(id: int, user_id: int):
+        obj = IncomeTypeService.get_one(id, user_id=user_id)
         db.session.delete(obj)
         db.session.commit()
 
 class IncomeService:
     @staticmethod
-    def get_all():
-        return Income.query.all()
+    def get_all(user_id: int):
+        return db.session.query(Income).join(IncomeType).filter(IncomeType.user_id == user_id).all()
 
     @staticmethod
-    def get_incomes_list(year: int, month: int):
+    def get_incomes_list(year: int, month: int, user_id: int):
         incomes = []
 
-        income_types = IncomeTypeService.get_all()
+        income_types = IncomeTypeService.get_all(user_id=user_id)
 
         for income_type in income_types:
             if income_type.recurrent:
@@ -101,8 +104,12 @@ class IncomeService:
         return incomes
 
     @staticmethod
-    def get_one(id: int):
-        income = db.session.get(Income, id)
+    def get_one(id: int, user_id: int):
+        income = db.session.query(Income).join(IncomeType).filter(
+            IncomeType.user_id == user_id,
+            Income.id == id
+        ).first()
+
         if not income:
             raise IncomeNotFoundException()
         return income
@@ -116,8 +123,8 @@ class IncomeService:
         return obj
 
     @staticmethod
-    def update(id: int, data: IncomeUpdateInterface):
-        obj = IncomeService.get_one(id)
+    def update(id: int, data: IncomeUpdateInterface, user_id: int):
+        obj = IncomeService.get_one(id, user_id=user_id)
 
         for key, value in data.items():
             setattr(obj, key, value)
@@ -128,8 +135,8 @@ class IncomeService:
         return obj
 
     @staticmethod
-    def delete(id: int):
-        obj = IncomeService.get_one(id)
+    def delete(id: int, user_id: int):
+        obj = IncomeService.get_one(id, user_id=user_id)
         db.session.delete(obj)
         db.session.commit()
 

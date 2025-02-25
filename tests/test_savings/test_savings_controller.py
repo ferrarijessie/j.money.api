@@ -10,9 +10,12 @@ from api.savings.controller import (
 
 
 class TestSavingTypeResource:
-    def test_get_empty_result(self, client):
+    def test_get_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.get(
-            url_for(SavingTypeResource.endpoint)
+            url_for(SavingTypeResource.endpoint),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 200
@@ -23,7 +26,8 @@ class TestSavingTypeResource:
         saving_type = saving_type_factory.create()
 
         response = client.get(
-            url_for(SavingTypeResource.endpoint)
+            url_for(SavingTypeResource.endpoint),
+            headers={'x-api-key': saving_type.user.token}
         )
         response_json = response.get_json()
 
@@ -31,7 +35,9 @@ class TestSavingTypeResource:
         assert len(response_json) == 1
         assert response_json[0]["id"] == saving_type.id
 
-    def test_post(self, client):
+    def test_post(self, client, user_factory):
+        user = user_factory.create()
+
         payload = {
             'name': 'New Saving Type',
             'active': True
@@ -39,7 +45,8 @@ class TestSavingTypeResource:
 
         response = client.post(
             url_for(SavingTypeResource.endpoint), 
-            json=payload
+            json=payload,
+            headers={'x-api-key': user.token}
         )
         response_json = response.get_json()
 
@@ -49,9 +56,12 @@ class TestSavingTypeResource:
 
 
 class TestSavingTypeIdResource:
-    def test_get_empty_result(self, client):
+    def test_get_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.get(
-            url_for(SavingTypeIdResource.endpoint, typeId=1)
+            url_for(SavingTypeIdResource.endpoint, typeId=1),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -61,7 +71,8 @@ class TestSavingTypeIdResource:
         saving_type = saving_type_factory.create()
 
         response = client.get(
-            url_for(SavingTypeIdResource.endpoint, typeId=saving_type.id)
+            url_for(SavingTypeIdResource.endpoint, typeId=saving_type.id),
+            headers={'x-api-key': saving_type.user.token}
         )
         response_json = response.get_json()
 
@@ -70,7 +81,9 @@ class TestSavingTypeIdResource:
         assert response_json["name"] == saving_type.name
         assert response_json["active"] == saving_type.active
 
-    def test_put_non_existent(self, client):
+    def test_put_non_existent(self, client, user_factory):
+        user = user_factory.create()
+
         payload = {
             "name": 'Edited Saving Type',
             "active": True
@@ -78,7 +91,8 @@ class TestSavingTypeIdResource:
 
         response = client.put(
             url_for(SavingTypeIdResource.endpoint, typeId=1),
-            json=payload
+            json=payload,
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -93,7 +107,8 @@ class TestSavingTypeIdResource:
 
         response = client.put(
             url_for(SavingTypeIdResource.endpoint, typeId=saving_type.id),
-            json=payload
+            json=payload,
+            headers={'x-api-key': saving_type.user.token}
         )
         response_json = response.get_json()
 
@@ -101,9 +116,12 @@ class TestSavingTypeIdResource:
         assert response_json["name"] == 'Edited Saving Type'
         assert response_json["active"] == False
 
-    def test_delete_non_existent(self, client):
+    def test_delete_non_existent(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.delete(
-            url_for(SavingTypeIdResource.endpoint, typeId=1)
+            url_for(SavingTypeIdResource.endpoint, typeId=1),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -113,16 +131,20 @@ class TestSavingTypeIdResource:
         saving_type = saving_type_factory.create()
 
         response = client.delete(
-            url_for(SavingTypeIdResource.endpoint, typeId=saving_type.id)
+            url_for(SavingTypeIdResource.endpoint, typeId=saving_type.id),
+            headers={'x-api-key': saving_type.user.token}
         )
 
         assert response.status_code == 204
 
 
 class TestSavingValueResource:
-    def test_get_empty_result(self, client):
+    def test_get_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.get(
-            url_for(SavingValueResource.endpoint)
+            url_for(SavingValueResource.endpoint),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 200
@@ -133,7 +155,8 @@ class TestSavingValueResource:
         saving_value = saving_value_factory.create()
 
         response = client.get(
-            url_for(SavingValueResource.endpoint)
+            url_for(SavingValueResource.endpoint),
+            headers={'x-api-key': saving_value.user.token}
         )
         response_json = response.get_json()
 
@@ -153,7 +176,8 @@ class TestSavingValueResource:
 
         response = client.post(
             url_for(SavingValueResource.endpoint), 
-            json=payload
+            json=payload,
+            headers={'x-api-key': saving_type.user.token}
         )
         response_json = response.get_json()
 
@@ -167,9 +191,12 @@ class TestSavingValueResource:
 
 
 class TestSavingValueIdResource:
-    def test_get_empty_result(self, client):
+    def test_get_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.get(
-            url_for(SavingValueIdResource.endpoint, id=1)
+            url_for(SavingValueIdResource.endpoint, id=1),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -179,7 +206,8 @@ class TestSavingValueIdResource:
         saving_value = saving_value_factory.create()
 
         response = client.get(
-            url_for(SavingValueIdResource.endpoint, id=saving_value.id)
+            url_for(SavingValueIdResource.endpoint, id=saving_value.id),
+            headers={'x-api-key': saving_value.user.token}
         )
         response_json = response.get_json()
 
@@ -191,7 +219,9 @@ class TestSavingValueIdResource:
         assert response_json["typeId"] == saving_value.type_id
         assert response_json["used"] == saving_value.used
 
-    def test_put_non_existent(self, client):
+    def test_put_non_existent(self, client, user_factory):
+        user = user_factory.create()
+
         payload = {
             "value": 500,
             "used": True
@@ -199,7 +229,8 @@ class TestSavingValueIdResource:
 
         response = client.put(
             url_for(SavingValueIdResource.endpoint, id=1),
-            json=payload
+            json=payload,
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -214,7 +245,8 @@ class TestSavingValueIdResource:
 
         response = client.put(
             url_for(SavingValueIdResource.endpoint, id=saving_value.id),
-            json=payload
+            json=payload,
+            headers={'x-api-key': saving_value.user.token}
         )
         response_json = response.get_json()
 
@@ -222,9 +254,12 @@ class TestSavingValueIdResource:
         assert response_json["value"] == 500
         assert response_json["used"] == True
 
-    def test_delete_non_existent(self, client):
+    def test_delete_non_existent(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.delete(
-            url_for(SavingValueIdResource.endpoint, id=1)
+            url_for(SavingValueIdResource.endpoint, id=1),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 404
@@ -234,28 +269,36 @@ class TestSavingValueIdResource:
         saving_value = saving_value_factory.create()
 
         response = client.delete(
-            url_for(SavingValueIdResource.endpoint, id=saving_value.id)
+            url_for(SavingValueIdResource.endpoint, id=saving_value.id),
+            headers={'x-api-key': saving_value.user.token}
         )
 
         assert response.status_code == 204
 
 
 class TestSavingSummaryResource:
-    def test_get_empty_result(self, client):
+    def test_get_empty_result(self, client, user_factory):
+        user = user_factory.create()
+
         response = client.get(
-            url_for(SavingSummaryResource.endpoint, year=2024, month=9)
+            url_for(SavingSummaryResource.endpoint, year=2024, month=9),
+            headers={'x-api-key': user.token}
         )
 
         assert response.status_code == 200
         assert response.get_json() == []
 
     
-    def test_get_with_result(self, client, saving_value_factory):
-        saving_value_factory.create(month=9, year=2024)
-        saving_value_factory.create(month=9, year=2024)
+    def test_get_with_result(self, client, saving_type_factory, saving_value_factory, user_factory):
+        user = user_factory.create()
+        saving_type_1 = saving_type_factory.create(user_id=user.id)
+        saving_type_2 = saving_type_factory.create(user_id=user.id)
+        saving_value_factory.create(month=9, year=2024, type_id=saving_type_1.id)
+        saving_value_factory.create(month=9, year=2024, type_id=saving_type_2.id)
 
         response = client.get(
-            url_for(SavingSummaryResource.endpoint, year=2024, month=9)
+            url_for(SavingSummaryResource.endpoint, year=2024, month=9),
+            headers={'x-api-key': user.token}
         )
         response_json = response.get_json()
 

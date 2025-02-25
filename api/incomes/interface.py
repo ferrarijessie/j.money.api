@@ -5,6 +5,7 @@ class IncomeTypeInterface(TypedDict):
     name: str
     recurrent: bool
     base_value: float
+    user_id: int
 
 class IncomeInterface(TypedDict):
     type_id: int

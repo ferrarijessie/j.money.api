@@ -1,6 +1,12 @@
 import enum
+
+from sqlalchemy.ext.hybrid import hybrid_property
+
 from database import db
 from datetime import datetime
+
+from ..auth.model import User
+
 
 class ExpenseCategoryEnum(enum.Enum):
     PERSONAL = 'personal'
@@ -17,8 +23,10 @@ class ExpenseType(db.Model):
     category = db.Column(db.Enum(ExpenseCategoryEnum), nullable=False, default=ExpenseCategoryEnum.PERSONAL.value)
     recurrent = db.Column(db.Boolean, default=False)
     base_value = db.Column(db.Numeric(precision=10, scale=2))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
     expense_values = db.relationship('Expense', backref='expense_type', cascade="all,delete", lazy=True)
+    user = db.relationship('User', backref='expense_type')
 
     @property
     def get_category(self):
@@ -34,9 +42,17 @@ class Expense(db.Model):
     paid = db.Column(db.Boolean, default=False)
 
     @property
-    def expense_type_name(self):
+    def type_name(self):
         return self.expense_type.name
 
     @property
     def category(self):
         return self.expense_type.get_category
+
+    @property
+    def user_id(self):
+        return self.expense_type.user_id
+
+    @property
+    def user(self):
+        return self.expense_type.user

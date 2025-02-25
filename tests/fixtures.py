@@ -1,4 +1,5 @@
 import pytest
+import uuid
 
 from datetime import datetime
 
@@ -17,18 +18,46 @@ from api.savings.model import (
     SavingType,
     SavingValue
 )
+from api.auth.model import (
+    User
+)
 
 
 # EXPENSES FACTORIES
 
+class UserFactory(object):
+    def create(self, **kwargs):
+        data = {
+            'username': f'newuser{User.query.count()+1}',
+            'password': 'password123'
+        }
+        data.update(kwargs)
+
+        user = User(username=data['username'])
+        user.password_hash = data['password']
+        user.token = uuid.uuid4().hex
+
+        db.session.add(user)
+        db.session.commit()
+
+        return user
+
+@pytest.fixture(scope="function")
+def user_factory(request):
+    return UserFactory()
+
+
 class ExpenseTypeFactory(object):
     def create(self, **kwargs):
+        user = UserFactory().create()
+
         data = {
             'id': ExpenseType.query.count() + 1,
             'name': 'Type 1',
             'category': ExpenseCategoryEnum.PERSONAL,
             'recurrent': False,
-            'base_value': 0
+            'base_value': 0,
+            'user_id': user.id
         }
         data.update(kwargs)
         expense_type = ExpenseType(**data)
@@ -68,10 +97,13 @@ def expense_factory(request):
 
 class IncomeTypeFactory(object):
     def create(self, **kwargs):
+        user = UserFactory().create()
+
         data = {
             'id': IncomeType.query.count() + 1,
             'name': 'Income 1',
             'base_value': 1000,
+            'user_id': user.id
         }
         data.update(kwargs)
         income_type = IncomeType(**data)
@@ -110,10 +142,13 @@ def income_factory(request):
 
 class SavingTypeFactory(object):
     def create(self, **kwargs):
+        user = UserFactory().create()
+
         data = {
             'id': SavingType.query.count() + 1,
             'name': 'Saving Type 1',
-            'active': True
+            'active': True,
+            'user_id': user.id
         }
         data.update(kwargs)
         saving_type = SavingType(**data)

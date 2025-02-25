@@ -17,16 +17,22 @@ from .interface import (
 
 class SavingTypeService:
     @staticmethod
-    def get_all():
-        return SavingType.query.all()
+    def get_all(user_id: int):
+        return SavingType.query.filter(SavingType.user_id == user_id).all()
 
     @staticmethod
-    def get_active():
-        return SavingType.query.filter(SavingType.active == True).all()
+    def get_active(user_id: int):
+        return SavingType.query.filter(
+            SavingType.active == True, 
+            SavingType.user_id == user_id
+        ).all()
 
     @staticmethod
-    def get_one(id: int):
-        saving_type =  db.session.get(SavingType, id)
+    def get_one(id: int, user_id: int):
+        saving_type = SavingType.query.filter(
+            SavingType.user_id == user_id,
+            SavingType.id == id
+        ).first()
 
         if not saving_type:
             raise SavingTypeNotFoundException()
@@ -41,8 +47,8 @@ class SavingTypeService:
         return obj
     
     @staticmethod
-    def update(id: int, data: SavingTypeInterface):
-        obj = SavingTypeService.get_one(id)
+    def update(id: int, data: SavingTypeInterface, user_id: int):
+        obj = SavingTypeService.get_one(id, user_id=user_id)
 
         for key, value in data.items():
             setattr(obj, key, value)
@@ -53,8 +59,8 @@ class SavingTypeService:
         return obj
 
     @staticmethod
-    def delete(id: int):
-        obj = SavingTypeService.get_one(id)
+    def delete(id: int, user_id: int):
+        obj = SavingTypeService.get_one(id, user_id=user_id)
 
         db.session.delete(obj)
         db.session.commit()
@@ -62,21 +68,24 @@ class SavingTypeService:
 
 class SavingValueService:
     @staticmethod
-    def get_all():
-        return SavingValue.query.all()
+    def get_all(user_id: int):
+        return db.session.query(SavingValue).join(SavingType).filter(SavingType.user_id == user_id).all()
 
     @staticmethod
-    def get_one(id: int):
-        saving_type =  db.session.get(SavingValue, id)
+    def get_one(id: int, user_id: int):
+        saving_type =  db.session.query(SavingValue).join(SavingType).filter(
+            SavingType.user_id == user_id,
+            SavingValue.id == id
+        ).first()
 
         if not saving_type:
             raise SavingValueNotFoundException()
         return saving_type
 
     @staticmethod
-    def get_savings_summary_list(year: int, month: int):
+    def get_savings_summary_list(year: int, month: int, user_id: int):
         savings_summary = []
-        saving_types = SavingTypeService.get_active()
+        saving_types = SavingTypeService.get_active(user_id=user_id)
 
         for saving_type in saving_types:
             balance = SavingValueService._get_balance_by_type_and_date(saving_type.id, year, month)
@@ -100,18 +109,20 @@ class SavingValueService:
         return savings_summary
 
     @staticmethod
-    def get_all_by_date(year: int, month: int):
-        return SavingValue.query.filter(
+    def get_all_by_date(year: int, month: int, user_id: int):
+        return db.session.query(SavingValue).join(SavingType).filter(
+            SavingType.user_id == user_id,
             SavingValue.year == year,
             SavingValue.month == month
         ).all()
 
     @staticmethod
-    def get_unused_by_date(year: int, month: int):
-        return SavingValue.query.filter(
+    def get_unused_by_date(year: int, month: int, user_id: int):
+        return db.session.query(SavingValue).join(SavingType).filter(
             SavingValue.used == False,
             SavingValue.year == year,
-            SavingValue.month == month
+            SavingValue.month == month,
+            SavingType.user_id == user_id
         ).all()
 
     @staticmethod
@@ -123,8 +134,8 @@ class SavingValueService:
         return obj
     
     @staticmethod
-    def update(id: int, data: SavingValueUpdateInterface):
-        obj = SavingValueService.get_one(id)
+    def update(id: int, data: SavingValueUpdateInterface, user_id: int):
+        obj = SavingValueService.get_one(id, user_id=user_id)
 
         for key, value in data.items():
             setattr(obj, key, value)
@@ -135,8 +146,8 @@ class SavingValueService:
         return obj
 
     @staticmethod
-    def delete(id: int):
-        obj = SavingValueService.get_one(id)
+    def delete(id: int, user_id: int):
+        obj = SavingValueService.get_one(id, user_id=user_id)
 
         db.session.delete(obj)
         db.session.commit()

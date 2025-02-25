@@ -8,6 +8,7 @@ class ExpenseTypeInterface(TypedDict):
     category: ExpenseCategoryEnum
     recurrent: bool
     base_value: float
+    user_id: int
 
 
 class ExpenseInterface(TypedDict):
@@ -25,7 +26,8 @@ class ExpenseUpdateInterface(TypedDict):
 
 class ExpenseReturnInterface(TypedDict):
     id: int
-    type: str
+    type_name: str
+    type_id: int
     value: float
     month: int
     year: int
