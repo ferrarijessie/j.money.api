@@ -21,6 +21,7 @@ class SignupResource(Resource):
     def post(self):
         return AuthService.signup(request.parsed_obj)
     
+
 @api.route('/user')
 class UserResource(Resource):
     @accepts(schema=UserUpdateSchema, api=api)
@@ -30,7 +31,6 @@ class UserResource(Resource):
     def put(self):
         user_id = current_user.id
         return AuthService.update_profile(request.parsed_obj, user_id=user_id)
-
 
 
 @api.route('/login')

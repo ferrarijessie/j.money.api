@@ -11,6 +11,14 @@ class User(db.Model, UserMixin):
     _password_hash = db.Column(db.String(255))
     active = db.Column(db.Boolean, nullable=False, default=True)
     token = db.Column(db.String(255), nullable=False)
+    email = db.Column(db.String(255))
+    first_name = db.Column(db.String(25))
+    last_name = db.Column(db.String(25))
+
+    @property
+    def name(self):
+        if self.first_name and self.last_name:
+            return f'{self.first_name} {self.last_name}'
 
     @property
     def is_active(self):

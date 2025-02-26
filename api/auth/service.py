@@ -39,18 +39,19 @@ class AuthService:
         if not user:
             raise UserNotFoundException
 
-        is_username_valid = AuthService._validate_username(data['username'])
+        is_username_valid = AuthService._validate_username(data['username'], user_id=user_id)
         if is_username_valid:
-            user.username = data['username']
+            for key, value in data.items():
+                setattr(user, key, value)
             db.session.add(user)
             db.session.commit()
             
         return User.query.get(user_id)
 
     @staticmethod
-    def _validate_username(username: str):
+    def _validate_username(username: str, user_id: int = 0):
         user = User.query.filter(User.username == username).first()
-        if user:
+        if user and user.id != user_id:
             raise UsernameAlreadyExistsException
         return True
 
