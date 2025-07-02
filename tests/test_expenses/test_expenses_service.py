@@ -125,6 +125,61 @@ class TestExpenseTypeService:
         assert result.base_value == 200
         assert expense.value == 200
 
+    def test_create_with_end_date(self, client, user_factory):
+        user = user_factory.create()
+        today = datetime.today()
+        end_date = today.replace(year=today.year + 1).date()
+        
+        result = ExpenseTypeService.create({
+            'name': 'Type 1',
+            'category': ExpenseCategoryEnum.PERSONAL,
+            'recurrent': True,
+            'base_value': 100,
+            'end_date': end_date,
+            'user_id': user.id
+        })
+
+        assert isinstance(result, ExpenseType)
+        assert result.name == 'Type 1'
+        assert result.category == ExpenseCategoryEnum.PERSONAL
+        assert result.recurrent == True
+        assert result.end_date == end_date
+
+    def test_update_end_date(self, client, expense_type_factory):
+        expense_type = expense_type_factory.create(
+            recurrent=True,
+            name='Type 1',
+            base_value=100,
+            user_id=1
+        )
+        today = datetime.today()
+        end_date = today.replace(year=today.year + 1).date()
+        
+        result = ExpenseTypeService.update(
+            expense_type.id,
+            {'end_date': end_date},
+            user_id=expense_type.user_id
+        )
+
+        assert result.end_date == end_date
+
+    def test_remove_end_date(self, client, expense_type_factory):
+        expense_type = expense_type_factory.create(
+            recurrent=True,
+            name='Type 1',
+            base_value=100,
+            end_date=datetime.today(),
+            user_id=1
+        )
+        
+        result = ExpenseTypeService.update(
+            expense_type.id,
+            {'end_date': None},
+            user_id=expense_type.user_id
+        )
+
+        assert result.end_date is None
+
     def test_delete_non_existent(self, client, expense_type_factory):
         expense_type = expense_type_factory.create()
 
@@ -196,6 +251,43 @@ class TestExpenseService:
         assert result.year == 2024
         assert result.type_id == expense_type.id
         assert result.paid == False
+
+    def test_create_recurrent_with_end_date(self, client, expense_type_factory):
+        expense_type = expense_type_factory.create(
+            recurrent=True,
+            name='Type 1',
+            base_value=100,
+            end_date=datetime.today().replace(year=datetime.today().year + 1),
+            user_id=1
+        )
+
+        result = ExpenseService.get_expense_list(
+            category=expense_type.category,
+            year=datetime.today().year,
+            month=datetime.today().month,
+            user_id=expense_type.user_id
+        )
+
+        assert len(result) == 1
+        assert result[0]['type_name'] == expense_type.name
+
+    def test_create_recurrent_past_end_date(self, client, expense_type_factory):
+        expense_type = expense_type_factory.create(
+            recurrent=True,
+            name='Type 1',
+            base_value=100,
+            end_date=datetime.today().replace(year=datetime.today().year - 1),
+            user_id=1
+        )
+
+        result = ExpenseService.get_expense_list(
+            category=expense_type.category,
+            year=datetime.today().year,
+            month=datetime.today().month,
+            user_id=expense_type.user_id
+        )
+
+        assert len(result) == 0
 
     def test_update_non_existent(self, client, expense_factory):
         expense = expense_factory.create()

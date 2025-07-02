@@ -158,6 +158,9 @@ class ExpenseService:
 
     @staticmethod
     def _get_or_create(type: ExpenseType, year: int, month: int):
+        if type.end_date and datetime(year, month, 1).date() > type.end_date:
+            return None
+            
         expense = Expense.query.filter(Expense.type_id == type.id, Expense.month == month, Expense.year == year).first()
         if not expense:
             data = ExpenseInterface({

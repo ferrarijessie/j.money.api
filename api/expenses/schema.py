@@ -6,6 +6,7 @@ class ExpenseTypeAcceptSchema(Schema):
     category = fields.String(attribute="category")
     recurrent = fields.Boolean(attribute="recurrent")
     baseValue = fields.Float(attribute="base_value")
+    endDate = fields.Date(attribute="end_date", required=False)
 
 
 class ExpenseReturnSchema(Schema):
@@ -25,6 +26,7 @@ class ExpenseTypeReturnSchema(Schema):
     category = fields.String(attribute="get_category")
     recurrent = fields.Boolean(attribute="recurrent")
     baseValue = fields.Float(attribute="base_value")
+    endDate = fields.Date(attribute="end_date")
     expenseValues = fields.List(fields.Nested(ExpenseReturnSchema), required=False, attribute="expense_values")
 
 

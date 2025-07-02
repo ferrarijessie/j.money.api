@@ -2,24 +2,11 @@ from flask import url_for
 
 from api.auth.controller import (
     UserResource,
-    UserLoginResource
+    UserLoginResource,
+    SignupResource
 )
 
 class TestUserResource:
-    def test_post_success(self, client):
-        payload = {
-            'username': 'ferrarijessie',
-            'password': 'password123'
-        }
-
-        response = client.post(
-            url_for(UserResource.endpoint),
-            json=payload
-        )
-
-        assert response.status_code == 200
-        assert response.get_json()['username'] == 'ferrarijessie'
-
     def test_put_success(self, client, user_factory):
         user = user_factory.create()
         payload = {
@@ -52,3 +39,18 @@ class TestLoginResource:
 
         assert response.status_code == 401
 
+
+class TestSignupResource:
+    def test_post_success(self, client):
+        payload = {
+            'username': 'ferrarijessie',
+            'password': 'password123'
+        }
+
+        response = client.post(
+            url_for(SignupResource.endpoint),
+            json=payload
+        )
+
+        assert response.status_code == 200
+        assert response.get_json()['username'] == 'ferrarijessie'

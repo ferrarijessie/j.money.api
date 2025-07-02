@@ -1,5 +1,6 @@
 from mypy_extensions import TypedDict
-
+from typing import Optional
+from datetime import datetime
 from .model import ExpenseCategoryEnum
 
 
@@ -8,6 +9,7 @@ class ExpenseTypeInterface(TypedDict):
     category: ExpenseCategoryEnum
     recurrent: bool
     base_value: float
+    end_date: Optional[datetime.date]
     user_id: int
 
 

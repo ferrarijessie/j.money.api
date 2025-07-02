@@ -23,6 +23,7 @@ class ExpenseType(db.Model):
     category = db.Column(db.Enum(ExpenseCategoryEnum), nullable=False, default=ExpenseCategoryEnum.PERSONAL.value)
     recurrent = db.Column(db.Boolean, default=False)
     base_value = db.Column(db.Numeric(precision=10, scale=2))
+    end_date = db.Column(db.Date, nullable=True)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
     
     expense_values = db.relationship('Expense', backref='expense_type', cascade="all,delete", lazy=True)
