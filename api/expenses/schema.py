@@ -21,7 +21,7 @@ class ExpenseReturnSchema(Schema):
 
 
 class ExpenseTypeReturnSchema(Schema):
-    expenseTypeId = fields.Integer(attribute="id")
+    id = fields.Integer(attribute="id")
     name = fields.String(attribute="name")
     category = fields.String(attribute="get_category")
     recurrent = fields.Boolean(attribute="recurrent")

@@ -10,6 +10,7 @@ class SummaryListReturnSchema(Schema):
     id = fields.Integer(attribute="id")
     value = fields.Float(attribute="value")
     typeName = fields.String(attribute="type_name")
+    typeId = fields.Integer(attribute="type_id")
     month = fields.Integer(attribute="month")
     year = fields.Integer(attribute="year")
     status = fields.Boolean(attribute="status")

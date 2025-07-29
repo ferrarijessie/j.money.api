@@ -16,7 +16,7 @@ class IncomeReturnSchema(Schema):
     received = fields.Boolean(attribute="received")
 
 class IncomeTypeReturnSchema(Schema):
-    incomeTypeId = fields.Integer(attribute="id")
+    id = fields.Integer(attribute="id")
     name = fields.String(attribute="name")
     recurrent = fields.Boolean(attribute="recurrent")
     baseValue = fields.Float(attribute="base_value")
