@@ -5,7 +5,7 @@ class ExpenseTypeAcceptSchema(Schema):
     name = fields.String(attribute="name")
     category = fields.String(attribute="category")
     recurrent = fields.Boolean(attribute="recurrent")
-    baseValue = fields.Float(attribute="base_value")
+    baseValue = fields.Float(attribute="base_value", required=False)
     endDate = fields.Date(attribute="end_date", required=False)
 
 

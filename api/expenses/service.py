@@ -157,18 +157,20 @@ class ExpenseService:
         return expenses
 
     @staticmethod
-    def _get_or_create(type: ExpenseType, year: int, month: int):
-        if type.end_date and datetime(year, month, 1).date() > type.end_date:
-            return None
-            
-        expense = Expense.query.filter(Expense.type_id == type.id, Expense.month == month, Expense.year == year).first()
+    def _get_or_create(expense_type: ExpenseType, year: int, month: int):
+        expense = Expense.query.filter(Expense.type_id == expense_type.id, Expense.month == month, Expense.year == year).first()
+        
         if not expense:
+            if expense_type.end_date and datetime(year, month, 1).date() > expense_type.end_date:
+                return None
+            
             data = ExpenseInterface({
-                "type_id": type.id,
-                "value": type.base_value or 0,
+                "type_id": expense_type.id,
+                "value": expense_type.base_value or 0,
                 "month": month,
                 "year": year,
                 "paid": False,
             })
             expense = ExpenseService.create(data)
+
         return expense
