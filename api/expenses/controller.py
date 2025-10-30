@@ -141,6 +141,8 @@ class ExpenseTypeIdResource(Resource):
             return ExpenseTypeService.update(typeId, request.parsed_obj, user_id=user_id)
         except ExpenseTypeNotFoundException:
             return make_json_response(data={"code": 404, "message": "Expense Type not found"}, code=404)
+        except Exception as e:
+            return make_json_response(data={"code": 500, "message": str(e)}, code=500)
 
     @responds(status_code=204, api=api)
     @api.response(200, "Expense type successfully deleted.")
