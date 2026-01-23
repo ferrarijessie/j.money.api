@@ -42,7 +42,8 @@ class SummaryService:
                 month=expense['month'],
                 year=expense['year'],
                 status=expense['paid'],
-                model=SummaryItemModelEnum.EXPENSE.value
+                model=SummaryItemModelEnum.EXPENSE.value,
+                category_name=expense['category']
             ))
         
         for income in incomes:
@@ -54,7 +55,8 @@ class SummaryService:
                 month=income['month'],
                 year=income['year'],
                 status=income['received'],
-                model=SummaryItemModelEnum.INCOME.value
+                model=SummaryItemModelEnum.INCOME.value,
+                category_name="INCOME"
             ))
 
         for saving in savings:
@@ -66,7 +68,8 @@ class SummaryService:
                 month=saving.month,
                 year=saving.year,
                 status=saving.used,
-                model=SummaryItemModelEnum.SAVING.value
+                model=SummaryItemModelEnum.SAVING.value,
+                category_name="SAVING"
             ))
 
         return result

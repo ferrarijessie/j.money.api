@@ -15,3 +15,4 @@ class SummaryListReturnSchema(Schema):
     year = fields.Integer(attribute="year")
     status = fields.Boolean(attribute="status")
     model = fields.String(attribute="model")
+    categoryName = fields.String(attribute="category_name")

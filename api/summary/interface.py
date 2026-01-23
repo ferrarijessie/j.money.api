@@ -18,3 +18,4 @@ class SummaryItem:
     year: int
     status: bool
     model: SummaryItemModelEnum
+    category_name: str
